@@ -3,16 +3,25 @@
 <ruby>論救の御手<rt>ロジカル・サルベータ</rt></ruby>
 <ruby><ruby>論救<rt>ろんきゅう</rt></ruby>の<ruby>御手<rt>みて</rt></ruby><rt>ロジカル・サルベータ</rt></ruby>
 <ruby style="ruby-position:under;"><ruby style="ruby-position:over;">論救<rt>ろんきゅう</rt></ruby>の<ruby style="ruby-position:over;">御手<rt>みて</rt></ruby><rt>ロジカル・サルベータ</rt></ruby>
-<ruby id="full" style="ruby-position:under;"><ruby style="ruby-position:over;">論救<rp>（</rp><rt>ろんきゅう</rt><rp>）</rp></ruby>の<ruby style="ruby-position:over;">御手<rp>（</rp><rt>みて</rt><rp>）</rp></ruby><rp>（</rp><rt>ロジカル・サルベータ</rt><rp>）</rp></ruby>
+<ruby id="group" style="ruby-position:under;"><ruby style="ruby-position:over;">論救<rp>（</rp><rt>ろんきゅう</rt><rp>）</rp></ruby>の<ruby style="ruby-position:over;">御手<rp>（</rp><rt>みて</rt><rp>）</rp></ruby><rp>（</rp><rt>ロジカル・サルベータ</rt><rp>）</rp></ruby>
+<ruby id="full" style="ruby-position:under;"><ruby style="ruby-position:over;">論<rp>（</rp><rt>ろん</rt><rp>）</rp>救<rp>（</rp><rt>きゅう</rt><rp>）</rp></ruby>の<ruby style="ruby-position:over;">御<rp>（</rp><rt>み</rt><rp>）</rp>手<rp>（</rp><rt>て</rt><rp>）</rp></ruby><rp>（</rp><rt>ロジカル・サルベータ</rt><rp>）</rp></ruby>
 
-<p id="text-content">a</p>
+<ruby id="full-url" style="ruby-position:under;"><ruby style="ruby-position:over;"><a href="https://www.kanjipedia.jp/kanji/0007394000">論</a><rp>（</rp><rt><a href="https://ja.wiktionary.org/wiki/%E8%AB%96">ろん</a></rt><rp>）</rp>救<rp>（</rp><rt>きゅう</rt><rp>）</rp></ruby>の<ruby style="ruby-position:over;">御<rp>（</rp><rt>み</rt><rp>）</rp>手<rp>（</rp><rt>て</rt><rp>）</rp></ruby><rp>（</rp><rt>ロジカル・サルベータ</rt><rp>）</rp></ruby>
+
+<p id="text-content-group"></p>
+<p id="text-content-full"></p>
 
 <script>
 window.addEventListener('DOMContentLoaded', (event) => {
     console.log('DOMContentLoaded!!');
-    const text = document.querySelector(`#full`).textContent
-    console.log(text);
-    document.querySelector(`#text-content`).innerText = text
+
+    const textG = document.querySelector(`#group`).textContent
+    console.log(textG);
+    document.querySelector(`#text-content-group`).innerText = textG
+
+    const textF = document.querySelector(`#full`).textContent
+    console.log(textF);
+    document.querySelector(`#text-content-full`).innerText = textF
 });
 window.addEventListener('beforeunload', (event) => {
     console.log('beforeunload!!');
