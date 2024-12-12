@@ -11,6 +11,10 @@
 <p id="text-content-group"></p>
 <p id="text-content-full"></p>
 
+<ruby id="kanji-split" style="ruby-position:under;"><ruby style="ruby-position:over;">山田<rp>（</rp><rt>やまだ</rt><rp>）</rp></ruby><ruby style="ruby-position:over;">太郎<rp>（</rp><rt>たろう</rt><rp>）</rp></ruby><rp>（</rp><rt>ヤマさん</rt><rp>）</rp></ruby>
+
+<p id="text-content-kanji-split"></p>
+
 <script>
 window.addEventListener('DOMContentLoaded', (event) => {
     console.log('DOMContentLoaded!!');
@@ -22,6 +26,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
     const textF = document.querySelector(`#full`).textContent
     console.log(textF);
     document.querySelector(`#text-content-full`).innerText = textF
+
+    const textK = document.querySelector(`#kanji-split`).textContent
+    console.log(textK);
+    document.querySelector(`#text-content-kanji-split`).innerText = textK
 });
 window.addEventListener('beforeunload', (event) => {
     console.log('beforeunload!!');
