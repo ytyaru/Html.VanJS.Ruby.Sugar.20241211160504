@@ -238,8 +238,9 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
     }
     static #toHtml(match, rt, offset, text) {
         const beforeIdx = Math.max(0,offset-this.MAX.RB)
-        const before = text.slice(beforeIdx , offset) // 《より前にある50文字（rb候補）
-
+        //const before = text.slice(beforeIdx , offset) // 《より前にある50文字（rb候補）
+        const before50 = text.slice(beforeIdx , offset) // 《より前にある50文字（rb候補）
+        const before = before50.slice(0, Math.min(before50.length, before50.lastIndex('》'))) // 》があればその直前まで
         const rb = this.#getRb(['￬￬','||','|','｜','↓'], beforeIdx, before, text)
         if (null===rb) {}
         else if ()
@@ -284,6 +285,41 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
         }
         li
         before.lastIndexOf('￬') && 0 < beforeIdx && text.slice(before.lastIndexOf('￬')-1, before.lastIndexOf('￬'))
+    }
+}
+class RubyBase {
+    static pipe(before) {
+        const isHalfPipe = before.includes('|')
+        const isHalfPipe2 = before.includes('||')
+        const isFullPipe = before.includes('｜')
+        const isHalfUnder2 = before.includes('￬￬')
+        const isFullUnder = before.includes('↓')
+        /*
+        const isUnder = before.includes('￬￬') || before.includes('↓')
+        const isLong = before.includes('￬￬') || before.includes('||') || before.includes('｜') 
+        const isShort = !before.includes('||') && before.includes('|')
+        const isEscape = before.includes('￬￬') || before.includes('||') || isShort 
+        */
+        const isUnder = isHalfUnder2 || isFullUnder
+        const isLong = isHalfUnder2 || isHalfPipe2 || isFullPipe
+        const isShort = !isHalfPipe2 && isHalfPipe
+        const isEscape = isHalfUnder2  || isHalfPipe2 || isShort 
+
+        for (let head of ['｜','↓','￬￬','||','|']) {
+            const li = before.lastIndexOf(head)
+            //if (-1 < li) {return [before.slice(li, offset), li]}
+            if (-1 < li) {return {text:before.slice(li, offset), li:li, isLong:isLong, isShort:isShort, isUnder:isUnder, isEscape:isEscape }}
+               
+               
+                
+        }
+        return null
+
+    }
+    static kanjis() {
+        // beforeの末尾から漢字が連続するインデックスを前方向に辿る（beofore末尾が漢字＆）
+        const isKanjis = matchAll(REGEX.RB.KANJI)
+
     }
 }
 class ShortRubyParser {
