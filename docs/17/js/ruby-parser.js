@@ -1,5 +1,6 @@
 ;(function(){
-class RubyParser { static parse(src) { return ShortRubyParser.parse(LongRubyParser.parse(src)) } }
+//class RubyParser { static parse(src) { return ShortRubyParser.parse(LongRubyParser.parse(src)) } }
+class RubyParser { static parse(src) { return CommonRubyParser.parse(src) } }
 class Comparer {
     constructor(L,R) {this._L=L;this._R=R;}
     get L() {return this._L} // left
@@ -204,18 +205,18 @@ class Analizer {
 }
 
 class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
-    static MAX = {RB:50, RT:100}
-    static META = {
+    static #MAX = {RB:50, RT:100}
+    static #META = {
 //        RB: ['｜','↓','|','￬'],
 //        RT: ['《','》','｜','↓','↑',','],
         RB: '｜ ↓ | ￬'.split(' '),
         RT: '《 》 ｜ ↓ ↑ ,'.split(' '),
     }
-    static REGEX = {
-        RT: RegExp(`《([^《》\n\r]{1,${CommonRubyParser.MAX.RT}})》`, 'g'),
+    static #REGEX = {
+        RT: RegExp(`《([^《》\n\r]{1,${this.#MAX.RT}})》`, 'g'),
         RB: {
-            KANJI: RegExp(`[一-龠々仝〆〇ヶ]{1,${CommonRubyParser.MAX.RB}}`, 'g'),
-            FULL: RegExp(`[^《》\n\r]{1,${CommonRubyParser.MAX.RB}}`, 'g'),
+            KANJI: RegExp(`[一-龠々仝〆〇ヶ]{1,${this.#MAX.RB}}`, 'g'),
+            FULL: RegExp(`[^《》\n\r]{1,${this.#MAX.RB}}`, 'g'),
         },
     }
     static parse(src) {
@@ -225,10 +226,10 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
 
         // src.slice(idx.preEnd, idx.before)
         // src.slice(idx.after)
-
-        while ((match = REGEX.RT.exec(src)) !== null) {
+//        console.log(`src:${src}`)
+        while ((match = this.#REGEX.RT.exec(src)) !== null) {
             idx.before = match.index
-            idx.after = REGEX.RT.lastIndex
+            idx.after = this.#REGEX.RT.lastIndex
 //            console.log(`Found ${match[0]}. Next starts at ${REGEX.RT.lastIndex}.`);
             // rbを探す
             //const rbD = RubyBase.parse(src, match.index)
@@ -238,12 +239,13 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
                 htmls.push(match[0])
             }
             else {// 親文字がある（rubyタグであると判断した）
+//                console.log('rbD:',rbD)
                 if (idx.preEnd!==idx.before) {// 親文字より前にあるテキストをそのまま出力する
                     htmls.push(src.slice(idx.preEnd, rbD.start))
                 }
                 // <ruby>HTMLかエスケープを出力
                 if (rbD.isEscape) {htmls.push(`${rbD.isShort ? '' : rbD.isUnder ? '↓' : '｜'}${rbD.text}《${match[1]}》`)}
-                else {html.push(this.#ruby(src.slice(rbD.start, idx.after+1), rbD, match[1]))}
+                else {htmls.push(this.#ruby(src.slice(rbD.start, idx.after+1), rbD, match[1]))}
                 /*
                 else if (rbD.isShort) {
                     const rubyText = src.slice(rbD.start, idx.after+1)
@@ -262,6 +264,7 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
 //        return 0===htmls.length ? src : htmls.join('')
     }
     static #ruby(rubyText, rbD, rt) {
+//        console.log(rbD)
         if (rbD.isShort) { return this.#short(rubyText, rbD, rt) }
         else if (rbD.isLong) { return this.#long(rubyText, rbD, rt) }
         else {throw new Error(`プログラムエラー`)}
@@ -269,12 +272,15 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
     static #short(rubyText, rbD, rt) {
         // 漢字《かん,じ｜KAN,JI》
         const rb = rbD.text
+//        console.log(rb, rbD)
         const rtA = Analizer.rt(rt)
         if (1 < rtA.pipes.length && [0,1].every(i=>rtA.has.commas[i])) { // 漢字一字ずつ上下にルビを振る
-            const rbA = Analizer.rb(rb)
-            return Html.kanjisTwin(rubyText, rb, rtA.commas[0], rtA.commas[1])
+//            const rbA = Analizer.rb(rb)
+//            return Html.kanjisTwin(rubyText, rbA.kanjis.map(k=>k.text), rtA.commas[0], rtA.commas[1])
+//            return Html.kanjisTwin(rubyText, rbD.kanjis.map(k=>k.text), rtA.commas[0], rtA.commas[1])
+            return Html.kanjisTwin(rubyText, Analizer.kanjis(rbD.text).map(k=>k.text), rtA.commas[0], rtA.commas[1])
         }
-        else if (rtA.has.commas[0]) { return Html.kanjis(match, Analizer.rb(rb), rtA) }//漢字一字ずつルビ。任意で下にも。
+        else if (rtA.has.commas[0]) { return Html.kanjis(rubyText, Analizer.rb(rb), rtA) }//漢字一字ずつルビ。任意で下にも。
         else if (rtA.has.pipe) { return Html.nest(rb, rtA.pipes[0], rtA.pipes[1]) } // 上下に一つずつルビを振る
         else { return Html.solo(rb, rt) } // 上に一つルビを振る
     }
@@ -288,25 +294,25 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
         }
         const rbA = Analizer.rb(rb)
         const rtA = Analizer.rt(rt)
-        console.log(`LONG:`, rbA, rtA, pos, this.#soloPos(pos.first, rtA.has.pipe), rtA.has.commas[0])
+        console.debug(`LONG:`, rbA, rtA, pos, this.#soloPos(pos.first, rtA.has.pipe), rtA.has.commas[0])
         if (rbA.has.kanji && !rbA.has.pipe) { // 親文字＝漢字アリ＋｜ナシ
             if (rb===rbA.kanjis.map(k=>k.text).join('')) {// 漢字のみ
-                if (rbA.has.pipe && rtA.has.pipe) { return Html.pipes(match, rbA, rtA, isUnder) }  // 部分ルビ
+                if (rbA.has.pipe && rtA.has.pipe) { return Html.pipes(rubyText, rbA, rtA, isUnder) }  // 部分ルビ
                 else if (rtA.has.pipe && [0,1].every(i=>rtA.has.commas[i])) { // 漢字一字ずつ上下にルビを振る
-                    return Html.kanjisTwin(match, rbA.kanjis.map(k=>k.text), rtA.commas[0], rtA.commas[1], isUnder)
+                    return Html.kanjisTwin(rubyText, rbA.kanjis.map(k=>k.text), rtA.commas[0], rtA.commas[1], isUnder)
                 }
-                else if (rtA.has.commas[0]) {return Html.kanjis(match, rbA, rtA, this.#soloPos(pos.first, rtA.has.pipe))}//一次ルビ
+                else if (rtA.has.commas[0]) {return Html.kanjis(rubyText, rbA, rtA, this.#soloPos(pos.first, rtA.has.pipe))}//一次ルビ
                 else if (rtA.has.pipe) {return Html.nest(rb, rtA.pipes[0], rtA.pipes[1], isUnder)} // 上下ルビ
                 else {return Html.solo(rb, rt, this.#soloPos(pos.first, rtA.has.pipe))} // 全体ルビ
             }
             else {// 字種不問
                 if (1 < rbA.kanjiGroups.length && rtA.has.pipe) { // 漢字群のみルビ ｜論救の御手《ろんきゅう｜みて｜ロジカル》
-                    return Html.kanjiGroups(match, rb, rt, rbA, rtA, isUnder)
+                    return Html.kanjiGroups(rubyText, rb, rt, rbA, rtA, isUnder)
                 } else if (!rtA.has.pipe && ['↑','↓'].some(s=>rt.includes(s))) { // 上下全体ルビ ｜あ山い《うえ↓した》
                     return Html.twin(rb, rt, isUnder)
                 } else { return Html.solo(rb, rt, this.#soloPos(pos.first)) } // 全体単一ルビ  ｜あ山い《うえ》  ↓あ山い《した》
             }
-        } else if (rbA.has.pipe) { return Html.pipes(match, rbA, rtA, isUnder) } // 親文字に漢字がないのに｜はある
+        } else if (rbA.has.pipe) { return Html.pipes(rubyText, rbA, rtA, isUnder) } // 親文字に漢字がないのに｜はある
         else { // 親文字に漢字も｜もない
             const POS = isUnder ? 'under' : ''
             if (['｜',','].every(s=>rt.includes(s))) { return Html.nest(rb, rtA.pipes[0].replaceAll(',',''), rtA.pipes[1].replaceAll(',',''), isUnder) }
@@ -337,7 +343,7 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
         const beforeIdx = Math.max(0,offset-this.MAX.RB)
         //const before = text.slice(beforeIdx , offset) // 《より前にある50文字（rb候補）
         const before50 = text.slice(beforeIdx , offset) // 《より前にある50文字（rb候補）
-        const before = before50.slice(0, Math.min(before50.length, before50.lastIndex('》'))) // 》があればその直前まで
+        const before = before50.slice(0, Math.min(before50.length, before50.lastIndexOf('》'))) // 》があればその直前まで
         const rb = this.#getRb(['￬￬','||','|','｜','↓'], beforeIdx, before, text)
         if (null===rb) {}
         else if ()
@@ -380,25 +386,33 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
 class RubyBase {
     static MAX_LEN = 50
     static analize(text, rtIdx) { // rtIdx:《のindex
+//        console.log(`RubyBase: text:${text} rtIdx:${rtIdx}`)
         const before = this.#before(text, rtIdx)
-        return this.#analize(before)
+        return this.#analize(before, rtIdx)
     }
     static #before(text, rtIdx) { // rtIdx:《のindex
+//        console.log(`text:${text} rtIdx:${rtIdx}`)
         const beforeIdx = Math.max(0,rtIdx-this.MAX_LEN)
         const before50 = text.slice(beforeIdx , rtIdx) // 《より前にある50文字（rb候補）
+//        console.log(`before50:${before50}`)
+        //console.log(`before50:${before50}`)
         //before50.matchAll(/[｜↓|￬《》\n\r]/g)
-        const end = Math.max(...[...before50.matchAll(/[》\n\r]/g)].map(s=>{const i=before50.lastIndex(s); return -1===i ? before50.length : i}))
-        //const before = before50.slice(0, Math.min(before50.length, before50.lastIndex('》'))) // 》があればその直前まで
+        const ends = [...before50.matchAll(/[》\n\r]/g)]
+        const end = 0===ends.length ? before50.length : ends.map(s=>{const i=before50.lastIndexOf(s); return i<0 ? before50.length : i})
+//        console.log(`end:${end}`)
+        //const end = Math.max(...[...before50.matchAll(/[》\n\r]/g)].map(s=>{const i=before50.lastIndexOf(s); return i<0 ? before50.length : i}))
+        //const before = before50.slice(0, Math.min(before50.length, before50.lastIndexOf('》'))) // 》があればその直前まで
         //const before = before50.slice(0, end) // 》\n\rがあればその直前まで
 //        const rb = this.#getRb(['￬￬','||','|','｜','↓'], beforeIdx, before, text)
         return before50.slice(0, end) // 》\n\rがあればその直前まで
     }
-    static #analize(before) {
+    static #analize(before, rtIdx) {
         const isHalfPipe = before.includes('|')
         const isHalfPipe2 = before.includes('||')
         const isFullPipe = before.includes('｜')
         const isHalfUnder2 = before.includes('￬￬')
         const isFullUnder = before.includes('↓')
+//        console.log(`before:${before} isHalfUnder2:${isHalfUnder2}`)
         /*
         const isUnder = before.includes('￬￬') || before.includes('↓')
         const isLong = before.includes('￬￬') || before.includes('||') || before.includes('｜') 
@@ -406,14 +420,15 @@ class RubyBase {
         const isEscape = before.includes('￬￬') || before.includes('||') || isShort 
         */
         const isUnder = isHalfUnder2 || isFullUnder
-        const isLong = isHalfUnder2 || isHalfPipe2 || isFullPipe
+        const isLong = isHalfUnder2 || isHalfPipe2 || isFullPipe || isFullUnder
         const isShort = !isHalfPipe2 && isHalfPipe
-        const isEscape = isHalfUnder2  || isHalfPipe2 || isShort 
+        const isEscape = isHalfUnder2 || isHalfPipe2 || isShort 
         for (let head of ['｜','↓','￬￬','||','|']) {
             const li = before.lastIndexOf(head)
             //if (-1 < li) {return [before.slice(li, offset), li]}
             //const start = li+head.length-1
-            const rb = before.slice(start, rtIdx)
+            //const rb = before.slice(start, rtIdx)
+            const rb = before.slice(li+head.length-1, rtIdx)
 //            const kanjis = Analizer.kanjis(rb, true)
 //            const kanjiGroups = Analizer.kanjis(rb, true)
             if (-1 < li) { return { // Long系
@@ -426,8 +441,9 @@ class RubyBase {
             }}
         }
         // Short系（全部漢字）
+//        console.log(`SHORT before:${before}`)
         if (/^[一-龠々仝〆〇ヶ]{1,}$/.test(before)) {
-            return {test:before, start:rtIdx-before.length, end:rtIdx, isLong:false, isShort:true, isUnder:false, isEscape:false}
+            return {text:before, start:rtIdx-before.length, end:rtIdx, isLong:false, isShort:true, isUnder:false, isEscape:false}
         }
         return null
     }
