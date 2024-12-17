@@ -227,6 +227,7 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
 //            console.log(`Found ${match[0]}. Next starts at ${REGEX.RT.lastIndex}.`);
             // rbを探す
             const rbD = RubyBase.analize(src, match.index)
+            console.log(rbD)
             if (null===rbD){ // 親文字がない（rubyタグと判断できず）
                 if (idx.preEnd!==idx.before){htmls.push(src.slice(idx.preEnd, idx.before))}
                 htmls.push(match[0])
@@ -330,6 +331,41 @@ class RubyBase {
         const isLong = isHalfUnder2 || isHalfPipe2 || isFullPipe || isFullUnder
         const isShort = !isHalfPipe2 && isHalfPipe
         const isEscape = isHalfUnder2 || isHalfPipe2 || isShort 
+
+        // Long親文字パイプ分割系 ｜山田｜太郎《やまだ｜たろう》  ↓山田｜太郎《やまだ｜たろう》
+        if (isFullPipe || isFullUnder) {
+            const pipe = isFullPipe ? '｜' : '↓'
+            //const matches = [...before.matchAll(RegExp(`[${pipe}]`, 'g'))]
+            //const matches = [...before.matchAll(RegExp(`[${isFullPipe ? '｜' : '↓'}]`, 'g'))]
+            const matches = [...before.matchAll(RegExp(`[｜↓]`, 'g'))]
+            console.log(matches)
+            if (1 < matches.length) {
+                matches.reverse()
+                let i=0;
+                for (i=0; i<matches.length; i++) {
+                    //const nonePipe = before.slice(matches[i].index).replaceAll(pipe, '')
+                    //const nonePipe = before.slice(matches[i].index).replaceAll('｜', '').replaceAll('↓', '')
+                    const nonePipe = before.slice(matches[i].index).replaceAll(/[｜↓]/g, '')
+                    if (!/[一-龠々仝〆〇ヶ]/g.test(nonePipe)) {break}
+                }
+//                console.log(before.slice(matches[i-1].index))
+                if (1<i) {
+//                    const kanjiMatches = matches.slice(0, i)
+                    const kanjiGroups = matches.slice(0, i).map(m=>m[0])
+                    return {
+                    text:before.slice(matches[i-1].index+1), 
+//                    text:null, 
+//                    array:matches[i-1].slice(0, i),
+                    start:matches[i-1].index, end:rtIdx,
+                    isLong:isLong, isShort:isShort, isUnder:isUnder, isEscape:isEscape,
+                    kanjis:Array.from(kanjiGroups), kanjiGroups:kanjiGroups,
+                    //kanjis:Array.from(kanjiMatches.map(m=>m[0])), kanjiGroups:kanjiMatches.map(m=>m[0]),
+                    //kanjis:Array.from(matches.slice(0, i).map(m=>m[0])), kanjiGroups:matches.slice(0, i),
+                    //kanjis:Analizer.kanjis(rb), kanjiGroups:Analizer.kanjis(rb, true),
+                }}
+            }
+        }
+        // Long系
         for (let head of ['｜','↓','￬￬','||','|']) {
             const li = before.lastIndexOf(head)
             //const rb = before.slice(li+head.length-1, rtIdx)
@@ -343,14 +379,15 @@ class RubyBase {
         }
         // Short系（全部漢字）
         const matches = Analizer.kanjis(before, true)
-        console.log(matches)
+        console.debug(matches)
         if (0 < matches.length) {
             const lastMatch = matches[matches.length-1]
-            console.log(lastMatch)
-            console.log(lastMatch.end, before.length-1)
-            console.log(lastMatch.end===before.length-1)
+            console.debug(lastMatch)
+            console.debug(lastMatch.end, before.length-1)
+            console.debug(lastMatch.end===before.length-1)
+            if (before.endsWith(lastMatch.text)) {
+            //if (lastMatch.lastIndex===before.length-1) {
             //if (lastMatch.lastIndex+1===rtIdx) {
-            if (lastMatch.lastIndex===before.length-1) {
                 return {text:lastMatch.text, start:rtIdx - lastMatch.text.length, end:rtIdx, isLong:false, isShort:true, isUnder:false, isEscape:false}
             }
         }

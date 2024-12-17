@@ -1,0 +1,28 @@
+<h1>ルビとテキスト検索</h1>
+<p>ルビ要素と他のテキストを合わせてテキスト検索することができない問題がある。</p>
+<p>たとえば以下の場合「山田」や「やまだ」でテキスト検索してもヒットしない。「山」「田」「やま」「だ」のみヒットする。</p>
+
+<ruby>山<rt>やま</rt>田<rt>だ</rt><ruby>
+<pre>
+<ruby>山<rt>やま</rt>田<rt>だ</rt><ruby>
+</pre>
+
+window.find()メソッドはあるが、非標準である。そもそも解決できると思えない。
+
+https://developer.mozilla.org/ja/docs/Web/API/Window/find
+
+```html
+```
+
+<div id="search-target">
+あいうえお
+<ruby>鈴<rt>すず</rt>木<rt>き</rt><ruby>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', async(event) => {
+    const div = document.getElementById('search-target');
+    div.focus();
+    div.setSelectionRange(0, 100);
+});
+</script>
