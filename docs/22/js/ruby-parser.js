@@ -1,42 +1,5 @@
 ;(function(){
-//class RubyParser { static parse(src) { return ShortRubyParser.parse(LongRubyParser.parse(src)) } }
 class RubyParser { static parse(src) { return CommonRubyParser.parse(src) } }
-class Comparer {
-    constructor(L,R) {this._L=L;this._R=R;}
-    get L() {return this._L} // left
-    get R() {return this._R} // right
-    get e() {return this._L===this._R} // equal
-    get n() {return this._L!==this._R} // not-equal
-    get g() {return this._L > this._R} // great
-    get l() {return this._L < this._R} // less
-    get ge() {return this._L >= this._R} // great
-    get le() {return this._L <= this._R} // less
-    /*
-    lev(v){return this._L===v}
-    lnv(v){return this._L!==v}
-    lgv(v){return this._L > v}
-    llv(v){return this._L < v}
-    lgev(v){return this._L >= v}
-    llev(v){return this._L <= v}
- 
-    rev(v){return this._R===v}
-    rnv(v){return this._R!==v}
-    rgv(v){return this._R > v}
-    rlv(v){return this._R < v}
-    rgev(v){return this._R >= v}
-    rlev(v){return this._R <= v}
-    
-    and(v){return [this._L,this.R].every(x=>x===v)}
-    or(v){return [this._L,this.R].some(x=>x===v)}
-    quadMap(c, v, fn1, fn2, fn3, fn4) { // c:e,n,g,l,ge,le, v:Number, p:fn[4]
-        const [L,R] = [this[`l${c}v`](v), this[`r${c}v`](v)]
-        if (L && R) {return fn1()}
-        else if (L) {return fn2()}
-        else if (R) {return fn3()}
-        else        {return fn4()}
-    }
-    */
-}
 class Html {
     static #DIRS = [['over','under'],['under','over']]
     static #dirs(isUnder=false) { return this.#DIRS[isUnder ? 1 : 0] }
@@ -74,48 +37,20 @@ class Html {
             } // 親文字より多いルビは無視する
         }
         return htmls.join('')
-
-        /*
-        // 親文字とルビ文字のペアを連続生成する
-        const flLi = new Comparer(rtFs.length-1, rtLs.length-1)
-        const htmls = []
-        for (let i=0; i<loopNum; i++) {
-            if (i <= rbs.length-1) {
-                htmls.push(flLi.quadMap('ge', i, 
-                    ()=>Html.nest(rbs[i], rtFs[i], rtLs[i], isUnder), 
-                    ()=>Html.solo(rbs[i], rtFs[i], pos.first), 
-                    ()=>Html.solo(rbs[i], rtLs[i], pos.last), 
-                    ()=>rbs[i])) // ルビより多い親文字はそのまま出力する
-            } // 親文字より多いルビは無視する
-        }
-        return htmls.join('')
-        */
     }
     static seq(match, rbs, rtFs, posF, isNest, rtL, posL, isErr, errMsgBase) { // 複同数の親文字とルビ文字からHTML生成する（任意でネストする）
         // 親文字とルビ文字のペア数を算出する
-        const btLen = new Comparer(rbs.length, rtFs.length)
-        const loopNum = btLen.g ? btLen.R : btLen.L
-        if (isErr) {console.warn(`${errMsgBase} rb:${btLen.L} rt:${btLen.R} 対象文:${match}\n${btLen.l ? '超過したルビは無視します。' : '不足したルビは親文字をそのまま出力します。'}`)}
+        const greatBase = rbs.length > rtFs.length
+        const loopNum = greatBase ? rtFs.length : rbs.length
+        if (isErr) {console.warn(`${errMsgBase} rb:${rbs.length} rt:${rtFs.length} 対象文:${match}\n${rbs.length < rtFs.length ? '超過したルビは無視します。' : '不足したルビは親文字をそのまま出力します。'}`)}
         // 親文字とルビ文字のペアを連続生成する
         const htmls = []
         for (let i=0; i<loopNum; i++) { htmls.push(Html.solo(rbs[i], rtFs[i], posF)) }
         // ルビが不足している残りの親文字をそのまま出力する
-        if (btLen.g) { for (let i=loopNum; i<btLen.L; i++) { htmls.push(rbs[i]) } }
+        if (greatBase) { for (let i=loopNum; i<rbs.length; i++) { htmls.push(rbs[i]) } }
         // HTML生成
         return isNest ? Html.solo(htmls.join(''), rtL, posL) : htmls.join('')
     }
-    /*
-    static pipes(match, rbA, rtA, isUnder=false) { // 親文字とルビ文字は共に｜で区切られているパターン
-        const pos = {
-            first: (!isUnder && rtA.pipes.length <= rbA.pipes.length) ? '' : (isUnder ? 'under' : 'over'),
-            last: isUnder ? 'over' : 'under',
-        }
-        const diff = rtA.pipes.length - rbA.pipes.length
-        return Html.seq(match, rbA.pipes, rtA.pipes, pos.first,
-            rbA.pipes.length < rtA.pipes.length, rtA.pipes[rbA.pipes.length], pos.last, diff!==0 && diff!==1,
-            '親文字が漢字と｜だけの場合、ルビ文字に同数か+1の｜が必要。')
-    }
-    */
     static pipes(match, rbs, rtA, isUnder=false) { // 親文字とルビ文字は共に｜で区切られているパターン
         const pos = {
             first: (!isUnder && rtA.pipes.length <= rbs.length) ? '' : (isUnder ? 'under' : 'over'),
@@ -219,12 +154,6 @@ class Analizer {
             isAllKanji: kanjis.length===pipes.join('').length,
         }
     }
-    // ｜    ↓     ||      ￬￬       |
-    // Pipe, Under, PipeH2, UnderH2, PipeH
-    // pipe, under, pipeH2, underH2, pipeH
-//    static pipes(src, isUnder=false) {return src.split(isUnder ? '↓' : '｜')}
-//    static pipeHs(src, isUnder=false) {return src.split(isUnder ? '￬' : '|')}
-//    static pipeH2s(src, isUnder=false, isSingle=false) {return src.split((isUnder ? '￬' : '|').repeat(isSingle ? 1 : 2))}
     static kanjis(src, isGroup=false) {
         const kanjis = []
         const KANJI = RegExp(`[一-龠々仝〆〇ヶ]${isGroup ? '{1,}' : ''}`, 'g')
@@ -234,9 +163,7 @@ class Analizer {
         }
         return kanjis
     }
-//    static isAllKanji(src) { return /^[一-龠々仝〆〇ヶ]{1,}$/.test(src) }
 }
-
 class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
     static #MAX = {RB:50, RT:100}
     static #META = {
@@ -311,7 +238,6 @@ class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
             if (rbA.pipes.length===rtA.pipes.length // ルビ文字に｜があり同数
              && rtA.has.commas.some(c=>c)           // ルビ文字に,があり
              && rbA.isAllKanji) {                   // 親文字が全部漢字
-             //&& Analizer.isAllKanji(rb.replaceAll('｜',''))) {      // 親文字が全部漢字で,と同数
                 return Html.kanjiPipeCommas(rubyText, rbA, rtA, rbD.isUnder)
             } else {return Html.pipes(rubyText, rbD.pipes, rtA, isUnder)}
         }
