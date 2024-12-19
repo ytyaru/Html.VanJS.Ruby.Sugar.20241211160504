@@ -92,6 +92,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
     console.log(RubyParser.parse('↓山田｜太郎《やまだ｜たろう｜ヤマさん》'))
     console.log(RubyParser.parse('｜山田｜太郎《やまだたろう》')) // ルビ文字の｜が足りない！
     console.log(RubyParser.parse('｜おや｜もじ《OYA｜MOJI》')) // 親文字が漢字じゃない！
+    console.log(RubyParser.parse('｜おや｜文字《OYA｜MOJI》')) // 親文字が漢字じゃない！
+    console.log(RubyParser.parse('｜親｜もじ《OYA｜MOJI》')) // 親文字が漢字じゃない！
 //    console.log(RubyParser.parse('山田太郎《やま｜だ｜た｜ろう｜やまだたろう》')) // 不可能！！！
 //    console.log(RubyParser.parse('山田太郎《やま,だ,た,ろう》'))
 //    console.log(RubyParser.parse('山田太郎《やま,だ,た,ろう｜やまだたろう》'))

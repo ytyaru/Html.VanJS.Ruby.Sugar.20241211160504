@@ -208,6 +208,7 @@ class Analizer {
         }
         return kanjis
     }
+    static isAllKanji(src) { return /^[一-龠々仝〆〇ヶ]{1,}$/.test(src) }
 }
 
 class CommonRubyParser { // Short, Long, Escape, 全パターン一括実行
@@ -340,6 +341,8 @@ class RubyBase {
             const matches = [...before.matchAll(RegExp(`[｜↓]`, 'g'))]
             console.debug(matches)
             if (1 < matches.length) {
+                const nonePipeBefore = before.slice(matches[0].index).replaceAll(/[｜↓]/g, '')
+                if (!Analizer.isAllKanji(nonePipeBefore)){console.warn(`親文字が｜で分割されている場合、その文字はすべて漢字であるべきです。 対象文:${before}\n最後の要素以外はそのまま出力します。`)}
                 matches.reverse()
                 let i=0;
                 for (i=0; i<matches.length; i++) {
@@ -355,7 +358,7 @@ class RubyBase {
     //                    kanjis:Array.from(kanjiGroups), kanjiGroups:kanjiGroups,
     //                    kanjiGroups:kanjiGroups,
                     }
-                } else {console.warn(`親文字が｜で分割されている場合、その文字は漢字であるべきです。 対象文:${before}\n最後の要素以外はそのまま出力します。`)}
+                }
             }
         }
         // Long系
