@@ -13,7 +13,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
     const a = new Assertion()
     const bb = new BlackBox(a)
     a.t(()=>RubyParser.parse('漢字《かんじ》')==='<ruby>漢字<rp>（</rp><rt>かんじ</rt><rp>）</rp></ruby>')
+    const table = UnitTest.test(a)
     a.fin()
+    document.querySelector(`main`).append(table)
+    document.querySelector(`textarea`).focus()
 
     console.log(RubyParser.parse('漢字《かんじ》'))
     console.log(RubyParser.parse('漢字《かん,じ》'))
