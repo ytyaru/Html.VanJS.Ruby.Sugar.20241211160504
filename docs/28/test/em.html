@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<meta name="description" content="">
+<meta name="author" content="ytyaru">
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja">
+<link rel="icon" href="../../asset/image/author/ytyaru.png">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+ruby.over { ruby-position:over; }
+ruby.under { ruby-position:under; }
+em {
+  font-style: normal;
+  -webkit-text-emphasis: filled sesame;
+  text-emphasis: filled sesame;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../../lib/van/1.2.6/nomodule.min.js"></script>
+<script src="../../js/footer.js"></script>
+<script src="../../lib/util/type.js"></script>
+<script src="../../lib/util/test/assertion.js"></script>
+<script src="../../lib/util/test/black-box.js"></script>
+
+<script src="../test/test-table.js"></script>
+<script src="../test/pattern/em.js"></script><!-- Em -->
+<script src="../test/unit-test.js"></script>
+<!--
+<script src="../js/test/test-table.js"></script>
+<script src="../js/test/pattern/short.js"></script>
+<script src="../js/test/unit-test.js"></script>
+-->
+<script src="../js/ruby-parser.js"></script>
+<!--<script src="js/main.js"></script>-->
+<script>
+window.addEventListener('DOMContentLoaded', (event) => {
+    console.log('DOMContentLoaded!!');
+    const unitTestId = 'Em'
+    const author = 'ytyaru'
+    van.add(document.querySelector('main'), 
+        van.tags.h1(van.tags.a({href:`https://github.com/${author}/Html.VanJS.Ruby.Sugar.20241211160504/`}, 'Ruby.Sugar')),
+        van.tags.p(`HTMLのRubyを簡易生成する。${unitTestId}単体試験。`),
+//        p('Easily generate HTML Ruby.'),
+    )
+    van.add(document.querySelector('footer'),  new Footer('ytyaru', '../../').make())
+
+    // Ruby(Short, Long, Escape), Em(Escape)
+    const a = new Assertion()
+    const table = UnitTest.test(a, unitTestId)
+    a.fin()
+    document.querySelector(`main`).append(table)
+    document.querySelector(`textarea`).focus()
+});
+window.addEventListener('beforeunload', (event) => {
+    console.log('beforeunload!!');
+});
+
+</script>
+
+</head>
+<body>
+    <main></main>
+    <footer></footer>
+</body>
+</html>
+<!-- https://coliss.com/articles/build-websites/operation/work/html-template-for-web-apps-or-sites.html -->
+<!-- https://coliss.com/articles/build-websites/operation/work/html5-template-for-2018.html -->

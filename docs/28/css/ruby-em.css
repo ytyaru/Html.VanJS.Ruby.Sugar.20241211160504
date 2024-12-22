@@ -2,6 +2,7 @@
 ruby.over { ruby-position:over; }
 ruby.under { ruby-position:under; }
 em {
+  font-style: normal;
   -webkit-text-emphasis: filled sesame;
   text-emphasis: filled sesame;
 }

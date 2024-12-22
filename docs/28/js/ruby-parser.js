@@ -227,7 +227,9 @@ class CommonRubyParser { // Ruby(Short, Long, Escape), Em, 全パターン一括
 //                else {htmls.push(this.#ruby(src.slice(rbD.start, idx.after+1), rbD, match[1]))}
                 htmls.push(this.#ruby(src.slice(rbD.start, idx.after+1), rbD, match[1]))
             }
-            idx.preEnd = idx.after + (isEm ? 1 : 0)
+            //idx.preEnd = idx.after + (isEm ? 1 : 0)
+            if (isEm) {idx.after++;}
+            idx.preEnd = idx.after
         }
         htmls.push(src.slice(idx.after))
         return htmls.join('')
