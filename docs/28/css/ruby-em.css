@@ -1,0 +1,7 @@
+@charset "utf-8";
+ruby.over { ruby-position:over; }
+ruby.under { ruby-position:under; }
+em {
+  -webkit-text-emphasis: filled sesame;
+  text-emphasis: filled sesame;
+}
