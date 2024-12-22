@@ -317,10 +317,13 @@ class RubyBase {
     static analize(text, oldRtEnd, newRtStart) { // 前回》〜今回《
         const before50 = text.slice(oldRtEnd, newRtStart).slice(this.MAX_LEN*-1)
         const before = before50.slice(Math.max(0, before50.lastIndexOf('\n'), before50.lastIndexOf('\r')))
+        //const before = before50
         console.debug(`before:${before}`)
-        return this.#analize(before, oldRtEnd, newRtStart)
+//        return this.#analize(before, oldRtEnd, newRtStart)
+        return this.#analize(before, oldRtEnd, text.lastIndexOf(before), newRtStart)
     }
-    static #analize(before, oldRtEnd, newRtStart) {
+    static #analize(before, oldRtEnd, beforeStart, newRtStart) {
+//    static #analize(before, oldRtEnd, newRtStart) {
         /*
         const isHalfPipe = before.includes('|')
 //        const isHalfPipe2 = before.includes('||')
@@ -353,7 +356,8 @@ class RubyBase {
                 return {
                     //text:before.slice(matches[0].index+1), 
                     text:rb, 
-                    start:oldRtEnd + matches[0].index, end:newRtStart,
+                    start:beforeStart + matches[0].index, end:newRtStart,
+//                    start:oldRtEnd + matches[0].index, end:newRtStart,
 //                    isLong:isLong, isShort:isShort, isUnder:isUnder, isEscape:isEscape,
                     //isLong:isLong, isShort:/[一-龠々仝〆〇ヶ｜]{1,}/g.test(rb), isUnder:isUnder, isEscape:isEscape,
                     //isLong:true, isShort:false, isUnder:isUnder, isEscape:isEscape,
@@ -365,11 +369,14 @@ class RubyBase {
         // Long系
         //for (let head of ['｜','↓','￬￬','||','|']) {
         for (let head of ['｜','↓']) {
-            const li = before.lastIndexOf(head)
+            //const li = before.lastIndexOf(head)
+            const li = before.indexOf(head)
             const rb = before.slice(li+head.length, newRtStart)
             if (-1 < li) { return { // Long系
                 text:rb, 
-                start:oldRtEnd + li, end:newRtStart,
+                start:beforeStart + li, end:newRtStart,
+                //start:oldRtEnd + li + 1, end:newRtStart,
+                //start:oldRtEnd + li, end:newRtStart,
                 //isLong:isLong, isShort:isShort, isUnder:isUnder, isEscape:isEscape,
 //                isLong:isLong, isShort:false, isUnder:isUnder, isEscape:isEscape,
                 isLong:true, isShort:false, isUnder:isUnder,
@@ -384,7 +391,9 @@ class RubyBase {
             console.debug(lastMatch)
             if (before.endsWith(lastMatch.text)) {
                 //return {text:lastMatch.text, start:newRtStart - lastMatch.text.length, end:newRtStart, isLong:false, isShort:true, isUnder:false, isEscape:false, pipes:pipes}
+                //return {text:lastMatch.text, start:newRtStart - lastMatch.text.length, end:newRtStart, isLong:false, isShort:true, isUnder:false, pipes:pipes}
                 return {text:lastMatch.text, start:newRtStart - lastMatch.text.length, end:newRtStart, isLong:false, isShort:true, isUnder:false, pipes:pipes}
+
             }
         }
         return null

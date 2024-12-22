@@ -25,8 +25,8 @@ main {
   grid-template-rows: 100%;
 }
 left,right{width:100%;}
-#viewer {background-color:red;width:100%;height:100%;}
-#editor {background-color:green;width:100%;height:100%;}
+#viewer {background-color:red;width:100%;height:100%;min-height:99vh;}
+#editor {background-color:green;width:100%;height:100%;min-height:99vh;resize:none;}
 </style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="../../lib/van/1.2.6/nomodule.min.js"></script>
@@ -49,6 +49,7 @@ window.addEventListener('DOMContentLoaded', async(event) => {
     const viewer = document.querySelector(`#viewer`)
     editor.addEventListener('input', async(e)=>{
         viewer.innerHTML = RubyParser.parse(e.target.value).replaceAll('\n', '<br>')
+//        viewer.innerHTML = RubyParser.parse(e.target.value.replaceAll('\n', '<br>'))
     })
     editor.value = `
 　よくある一般的《いっぱんてき》なルビ振《ふ》りについて。
