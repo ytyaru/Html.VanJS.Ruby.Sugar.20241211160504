@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<meta name="description" content="">
+<meta name="author" content="ytyaru">
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja">
+<link rel="icon" href="../../asset/image/author/ytyaru.png">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+ruby.over { ruby-position:over; }
+ruby.under { ruby-position:under; }
+/*ruby.both { padding-block-end: 0.5em; }*/ /* 両面ルビの分だけ文字の高さを確保する */
+em {
+  font-style: normal;
+  -webkit-text-emphasis: filled sesame;
+  text-emphasis: filled sesame;
+}
+* {margin:0;padding:0;box-sizing:border-box;line-height:1.7em;letter-spacing:0.05em;}
+/*main {column-count:2;column-gap:0;}*/
+main {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-template-rows: 100%;
+}
+left,right{width:100%;}
+#viewer {background-color:red;width:100%;height:100%;}
+#editor {background-color:green;width:100%;height:100%;}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../../lib/van/1.2.6/nomodule.min.js"></script>
+<script src="../../js/footer.js"></script>
+<!--
+<script src="../../lib/util/type.js"></script>
+<script src="../../lib/util/test/assertion.js"></script>
+<script src="../../lib/util/test/black-box.js"></script>
+
+<script src="../test/test-table.js"></script>
+<script src="../test/pattern/em.js"></script>
+<script src="../test/unit-test.js"></script>
+-->
+<script src="../js/ruby-parser.js"></script>
+<!--<script src="js/main.js"></script>-->
+<script>
+window.addEventListener('DOMContentLoaded', async(event) => {
+    console.log('DOMContentLoaded!!');
+    const editor = document.querySelector(`#editor`)
+    const viewer = document.querySelector(`#viewer`)
+    editor.addEventListener('input', async(e)=>{
+        viewer.innerHTML = RubyParser.parse(e.target.value).replaceAll('\n', '<br>')
+    })
+    editor.value = `
+　よくある一般的《いっぱんてき》なルビ振《ふ》りについて。
+
+　圏点《けんてん》（傍点《ぼうてん》）を振ることもできます。
+
+「俺の言うことを聞かなければどうなるか、《《わかってるよな？》》」
+
+　漢字が連続しているが、ルビ開始位置は途中からにしたい場合、パイプ|を使います。
+
+対象外｜対象《たいしょう》
+
+　漢字以外にもルビを振れます。ルビを振りたい親文字の開始位置にパイプ|を使います。
+
+｜ひらがな《ヒラガナ》｜HTML《HyperTextMarkupLanguage》
+
+　漢字一字ずつにルビを振ることもできます。
+
+山田《やま,だ》
+｜山田《やま,だ》
+
+　連続したルビ要素をまとめて作れます。
+
+｜山田｜太郎《やまだ｜たろう》
+｜ひら｜がな《ヒラ｜ガナ》
+｜H｜T｜M｜L《Hyper｜Text｜Markup｜Language》
+
+　ルビを下に振れます。
+
+↓山田《やまだ》
+
+　両面ルビを作れます。ルビ要素をネストしています。
+
+山田《やまだ｜ヤマさん》
+｜山田《やまだ｜ヤマさん》
+
+｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》｜山田《やまだ｜ヤマさん》
+`
+    editor.dispatchEvent(new Event('input'))
+    /*
+    const unitTestId = 'Em'
+    const author = 'ytyaru'
+    van.add(document.querySelector('main'), 
+        van.tags.h1(van.tags.a({href:`https://github.com/${author}/Html.VanJS.Ruby.Sugar.20241211160504/`}, 'Ruby.Sugar')),
+        van.tags.p(`HTMLのRubyを簡易生成する。${unitTestId}単体試験。`),
+//        p('Easily generate HTML Ruby.'),
+    )
+    van.add(document.querySelector('footer'),  new Footer('ytyaru', '../../').make())
+    */
+    /*
+    // Ruby(Short, Long, Escape), Em(Escape)
+    const a = new Assertion()
+    const table = UnitTest.test(a, unitTestId)
+    a.fin()
+    document.querySelector(`main`).append(table)
+    document.querySelector(`textarea`).focus()
+    */
+
+});
+window.addEventListener('beforeunload', (event) => {
+    console.log('beforeunload!!');
+});
+
+</script>
+
+</head>
+<body>
+    <main>
+        <div id="left"><textarea id="editor"></textarea></div>
+        <div id="right"><div id="viewer">あああああああ</div></div>
+    </main>
+    <footer></footer>
+</body>
+</html>
+<!-- https://coliss.com/articles/build-websites/operation/work/html-template-for-web-apps-or-sites.html -->
+<!-- https://coliss.com/articles/build-websites/operation/work/html5-template-for-2018.html -->

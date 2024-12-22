@@ -149,6 +149,40 @@ window.addEventListener('DOMContentLoaded', (event) => {
     // em
     console.log(RubyParser.parse('ここを《《強調》》する。当然《とうぜん》｜漢字《かんじ》と併用も可能。'))
     console.log(RubyParser.parse('ここを《《強調》》する。«強調»のエスケープも可能。当然《とうぜん》｜漢字《かんじ》と併用も可能。'))
+
+    let text = `　よくある一般的《いっぱんてき》なルビ振《ふ》りについて。
+
+　圏点《けんてん》（傍点《ぼうてん》）を振ることもできます。
+
+「俺の言うことを聞かなければどうなるか、《《わかってるよな？》》」
+
+　漢字が連続しているが、ルビ開始位置は途中からにしたい場合、パイプ|を使います。
+
+対象外｜対象《たいしょう》
+
+　漢字以外にもルビを振れます。ルビを振りたい親文字の開始位置にパイプ|を使います。
+
+｜ひらがな《ヒラガナ》｜HTML《HyperTextMarkupLanguage》
+
+　漢字一字ずつにルビを振ることもできます。
+
+山田《やま,だ》
+｜山田《やま,だ》
+
+　連続したルビ要素をまとめて作れます。
+
+｜山田｜太郎《やまだ｜たろう》
+｜ひら｜がな《ヒラ｜ガナ》
+｜H｜T｜M｜L《Hyper｜Text｜Markup｜Language》
+
+　両面ルビを作れます。ルビ要素をネストしています。
+
+山田《やまだ｜ヤマさん》
+｜山田《やまだ｜ヤマさん》
+`
+
+    console.log(RubyParser.parse(text))
+
 });
 window.addEventListener('beforeunload', (event) => {
     console.log('beforeunload!!');
