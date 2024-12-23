@@ -201,20 +201,40 @@ class CommonRubyParser { // Ruby(Short, Long, Escape), Em, 全パターン一括
         let match = null
         const idx = {preEnd:0, before:0, after:0} // ルビ要素の前後
         while ((match = this.#REGEX.RT.exec(src)) !== null) {
-            let isEm = false
+//            let isEm = false
             idx.before = match.index
             idx.after = this.#REGEX.RT.lastIndex
-            console.debug(match)
+//            console.debug(match)
 //            console.log(`Found ${match[0]}. Next starts at ${REGEX.RT.lastIndex}.`);
+            console.log(`idx.before:${idx.before} idx.after:${idx.after} idx.preEnd:${idx.preEnd}`, match)
+
+            // Em判定
+            const isEm = 0 < match.index && this.#REGEX.RT.lastIndex < src.length
+                && '《'===src.slice(match.index-1, match.index)
+                && '》'===src.slice(this.#REGEX.RT.lastIndex, this.#REGEX.RT.lastIndex+1)
+            if (isEm) {
+                if (idx.preEnd!==idx.before){htmls.push(src.slice(idx.preEnd, idx.before - 1))}
+                htmls.push(Html.em(match[1]))
+                idx.after++;
+                idx.preEnd = idx.after
+                continue
+            }
+
+
+
             // rbを探す
             const rbD = RubyBase.analize(src, idx.preEnd, idx.before) // 前回》〜今回《
             console.debug(rbD)
             if (null===rbD){ // 親文字がない（rubyタグと判断できず。emまたはプレーンテキストである）
+                if (idx.preEnd!==idx.before){htmls.push(src.slice(idx.preEnd, idx.before))}
+                htmls.push(match[0])
+                /*
                 isEm = 0 < match.index && this.#REGEX.RT.lastIndex < src.length
                     && '《'===src.slice(match.index-1, match.index)
                     && '》'===src.slice(this.#REGEX.RT.lastIndex, this.#REGEX.RT.lastIndex+1)
                 if (idx.preEnd!==idx.before){htmls.push(src.slice(idx.preEnd, idx.before - (isEm ? 1 : 0)))}
                 htmls.push(isEm ? Html.em(match[1]) : match[0])
+                */
             }
             else {// 親文字がある（rubyタグであると判断した）
                 console.debug('rbD:',rbD)
@@ -228,7 +248,7 @@ class CommonRubyParser { // Ruby(Short, Long, Escape), Em, 全パターン一括
                 htmls.push(this.#ruby(src.slice(rbD.start, idx.after+1), rbD, match[1]))
             }
             //idx.preEnd = idx.after + (isEm ? 1 : 0)
-            if (isEm) {idx.after++;}
+//            if (isEm) {idx.after++;}
             idx.preEnd = idx.after
         }
         htmls.push(src.slice(idx.after))
@@ -315,13 +335,36 @@ class CommonRubyParser { // Ruby(Short, Long, Escape), Em, 全パターン一括
 class RubyBase {
     static MAX_LEN = 50
     static analize(text, oldRtEnd, newRtStart) { // 前回》〜今回《
-        const before50 = text.slice(oldRtEnd, newRtStart).slice(this.MAX_LEN*-1)
-        const before = before50.slice(Math.max(0, before50.lastIndexOf('\n'), before50.lastIndexOf('\r')))
-        //const before = before50
-        console.debug(`before:${before}`)
-//        return this.#analize(before, oldRtEnd, newRtStart)
-        return this.#analize(before, oldRtEnd, text.lastIndexOf(before), newRtStart)
+        const beforeFull = text.slice(oldRtEnd, newRtStart)
+        const beforeNlLi = Math.max(0, beforeFull.lastIndexOf('\n'), beforeFull.lastIndexOf('\r'))
+        const beforeNl = beforeFull.slice(beforeNlLi < 0 ? 0 : beforeNlLi + 1)
+        const beforeNlStart = newRtStart - beforeNlLi < 0 ? 0 : beforeNlLi + 1
+        const diff = newRtStart - beforeNlStart
+        const beforeStart = diff < 50 ? beforeNlStart : beforeNlStart + diff - 50
+        const before = beforeFull.slice(beforeStart)
+        return this.#analize(before, oldRtEnd, beforeStart, newRtStart)
     }
+    /*
+    static analize(text, oldRtEnd, newRtStart) { // 前回》〜今回《
+        const beforeFull = text.slice(oldRtEnd, newRtStart)
+        //const before50 = text.slice(oldRtEnd, newRtStart).slice(this.MAX_LEN*-1)
+        const before50 = beforeFull.slice(this.MAX_LEN*-1)
+        const before50Start = oldRtEnd + beforeFull.length - before50.length
+        //const before = before50.slice(Math.max(0, before50.lastIndexOf('\n'), before50.lastIndexOf('\r')))
+        const nlLi = Math.max(before50.lastIndexOf('\n'), before50.lastIndexOf('\r'))
+        //const beforeStart = 0 <= nlLi ? nlLi + 1 : 0
+        //const beforeStart = newRtStart - 0 <= nlLi ? nlLi + 1 : 0
+        //const beforeStart = before50Start + nlLi ? nlLi + 1 : 0
+        const beforeStart = newRtStart - before50Start + nlLi ? nlLi + 1 : 0
+        //const before = before50.slice(0 <= nlLi ? nlLi + 1 : 0)
+        const before = beforeFull.slice(beforeStart)
+        //const before = before50
+        console.debug(`before:${before} beforeStart:${beforeStart}`)
+//        return this.#analize(before, oldRtEnd, newRtStart)
+        //return this.#analize(before, oldRtEnd, text.lastIndexOf(before), newRtStart)
+        return this.#analize(before, oldRtEnd, beforeStart, newRtStart)
+    }
+    */
     static #analize(before, oldRtEnd, beforeStart, newRtStart) {
 //    static #analize(before, oldRtEnd, newRtStart) {
         /*
@@ -369,12 +412,13 @@ class RubyBase {
         // Long系
         //for (let head of ['｜','↓','￬￬','||','|']) {
         for (let head of ['｜','↓']) {
-            //const li = before.lastIndexOf(head)
-            const li = before.indexOf(head)
+            const li = before.lastIndexOf(head)
+//            const li = before.indexOf(head)
             const rb = before.slice(li+head.length, newRtStart)
             if (-1 < li) { return { // Long系
                 text:rb, 
                 start:beforeStart + li, end:newRtStart,
+                //start:beforeStart + li, end:newRtStart,
                 //start:oldRtEnd + li + 1, end:newRtStart,
                 //start:oldRtEnd + li, end:newRtStart,
                 //isLong:isLong, isShort:isShort, isUnder:isUnder, isEscape:isEscape,
