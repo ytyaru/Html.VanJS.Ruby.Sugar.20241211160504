@@ -336,14 +336,47 @@ class RubyBase {
     static MAX_LEN = 50
     static analize(text, oldRtEnd, newRtStart) { // 前回》〜今回《
         const beforeFull = text.slice(oldRtEnd, newRtStart)
-        const beforeNlLi = Math.max(0, beforeFull.lastIndexOf('\n'), beforeFull.lastIndexOf('\r'))
+        const beforeNlLi = Math.max(beforeFull.lastIndexOf('\n'), beforeFull.lastIndexOf('\r'))
         const beforeNl = beforeFull.slice(beforeNlLi < 0 ? 0 : beforeNlLi + 1)
-        const beforeNlStart = newRtStart - beforeNlLi < 0 ? 0 : beforeNlLi + 1
+        //const beforeNlStart = newRtStart - beforeNlLi < 0 ? 0 : beforeNlLi + 1 + oldRtEnd
+        //const beforeNlStart = newRtStart - beforeNlLi < 0 ? 0 : beforeNlLi + 1
+        //const beforeNlStart = oldRtEnd + beforeNlLi < 0 ? 0 : beforeNlLi + 1
+        //const beforeNlStart = beforeNlLi < 0 ? oldRtEnd : beforeNlLi + 1
+        const beforeNlStart = beforeNlLi < 0 ? 0 : beforeNlLi + 1
+        //const diff = newRtStart - beforeNlStart
+        //const beforeStart = diff < 50 ? beforeNlStart : beforeNlStart + diff - 50
+        //const beforeStart = diff < 50 ? beforeNlStart : newRtStart - 50
+        //const before = beforeFull.slice(beforeStart)
+//        const before = diff < 50 ? beforeFull.slice(beforeStart) : beforeFull.slice(beforeStart*-1)
+        //const before = beforeFull.slice(diff < 50 ? beforeStart : beforeStart*-1)
+        //const before = text.slice(diff < 50 ? beforeStart : beforeStart*-1)
+        const beforeNlLen = beforeFull.length - beforeNlStart
+        const beforeStart = 50 < beforeNlLen ? beforeNlStart + beforeNlLen - 50 : beforeNlStart
+//beforeNlStart + beforeNlLen - 50
+//beforeNlStart + beforeNlLen + (beforeNlLen - 50)
+//beforeNlLen + (beforeNlLen - 50)
+        const before = beforeFull.slice(beforeStart)
+        //console.log(before, beforeNlLi, beforeNlStart, beforeStart, oldRtEnd, newRtStart)
+//        console.log(`before:${before}\nbeforeNlLi:${beforeNlLi}\nbeforeNlStart:${beforeNlStart}\nbeforeStart:${beforeStart}\noldRtEnd:${oldRtEnd}\nnewRtStart:${newRtStart}`)
+        return this.#analize(before, oldRtEnd, beforeStart, newRtStart)
+    }
+
+    /*
+    static analize(text, oldRtEnd, newRtStart) { // 前回》〜今回《
+        const beforeFull = text.slice(oldRtEnd, newRtStart)
+        const beforeNlLi = Math.max(beforeFull.lastIndexOf('\n'), beforeFull.lastIndexOf('\r'))
+        const beforeNl = beforeFull.slice(beforeNlLi < 0 ? 0 : beforeNlLi + 1)
+        //const beforeNlStart = newRtStart - beforeNlLi < 0 ? 0 : beforeNlLi + 1 + oldRtEnd
+        //const beforeNlStart = newRtStart - beforeNlLi < 0 ? 0 : beforeNlLi + 1
+        const beforeNlStart = oldRtEnd + beforeNlLi < 0 ? 0 : beforeNlLi + 1
         const diff = newRtStart - beforeNlStart
         const beforeStart = diff < 50 ? beforeNlStart : beforeNlStart + diff - 50
         const before = beforeFull.slice(beforeStart)
+        //console.log(before, beforeNlLi, beforeNlStart, beforeStart, oldRtEnd, newRtStart)
+        console.log(`before:${before}\nbeforeNlLi:${beforeNlLi}\nbeforeNlStart:${beforeNlStart}\nbeforeStart:${beforeStart}\noldRtEnd:${oldRtEnd}\nnewRtStart:${newRtStart}`)
         return this.#analize(before, oldRtEnd, beforeStart, newRtStart)
     }
+    */
     /*
     static analize(text, oldRtEnd, newRtStart) { // 前回》〜今回《
         const beforeFull = text.slice(oldRtEnd, newRtStart)
@@ -399,7 +432,8 @@ class RubyBase {
                 return {
                     //text:before.slice(matches[0].index+1), 
                     text:rb, 
-                    start:beforeStart + matches[0].index, end:newRtStart,
+                    start:oldRtEnd + beforeStart + matches[0].index, end:newRtStart,
+//                    start:beforeStart + matches[0].index, end:newRtStart,
 //                    start:oldRtEnd + matches[0].index, end:newRtStart,
 //                    isLong:isLong, isShort:isShort, isUnder:isUnder, isEscape:isEscape,
                     //isLong:isLong, isShort:/[一-龠々仝〆〇ヶ｜]{1,}/g.test(rb), isUnder:isUnder, isEscape:isEscape,
@@ -415,9 +449,10 @@ class RubyBase {
             const li = before.lastIndexOf(head)
 //            const li = before.indexOf(head)
             const rb = before.slice(li+head.length, newRtStart)
+            console.log(rb, li, before)
             if (-1 < li) { return { // Long系
                 text:rb, 
-                start:beforeStart + li, end:newRtStart,
+                start:oldRtEnd + beforeStart + li, end:newRtStart,
                 //start:beforeStart + li, end:newRtStart,
                 //start:oldRtEnd + li + 1, end:newRtStart,
                 //start:oldRtEnd + li, end:newRtStart,
