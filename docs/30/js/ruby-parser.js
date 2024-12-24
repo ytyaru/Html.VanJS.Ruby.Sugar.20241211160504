@@ -265,7 +265,6 @@ class CommonRubyParser { // Ruby(Short, Long, Escape), Em, 全パターン一括
         const rbA = Analizer.rb(rb)
         console.debug(`LONG:`, rbA, rtA, pos, this.#soloPos(pos.first, rtA.has.pipe), rtA.has.commas[0])
         if (rbA.has.pipe) { // 親文字に｜がある
-            //if (rbA.pipes.length===rtA.pipes.length // ルビ文字に｜があり同数
             if (rbA.pipes.length <= rtA.pipes.length // ルビ文字に｜があり同数以上
              && rtA.has.commas.some(c=>c)           // ルビ文字に,があり
              && rbA.isAllKanji) {                   // 親文字が全部漢字
