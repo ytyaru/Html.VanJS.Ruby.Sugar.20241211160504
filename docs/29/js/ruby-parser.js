@@ -365,7 +365,9 @@ class RubyBase {
         //const before = beforeFull.slice(diff < 50 ? beforeStart : beforeStart*-1)
         //const before = text.slice(diff < 50 ? beforeStart : beforeStart*-1)
         const beforeNlLen = beforeFull.length - beforeNlStart
-        const beforeStart = 50 < beforeNlLen ? beforeNlStart + beforeNlLen - 50 : beforeNlStart
+        //const beforeStart = 50 < beforeNlLen ? beforeNlStart + beforeNlLen - 50 : beforeNlStart
+        const beforeStart = this.MAX_LEN < beforeNlLen ? beforeNlStart + beforeNlLen - this.MAX_LEN : beforeNlStart
+        
 //beforeNlStart + beforeNlLen - 50
 //beforeNlStart + beforeNlLen + (beforeNlLen - 50)
 //beforeNlLen + (beforeNlLen - 50)
